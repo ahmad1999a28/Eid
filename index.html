@@ -135,19 +135,19 @@
       <button class="btn btn-primary" id="audioBtn" onclick="toggleAudio()">
         <span id="audioIcon">🔊</span><span id="audioLabel">تشغيل التكبيرات</span>
       </button>
-      <button class="btn btn-secondary" onclick="shareGreeting()">
-        <span>🔗</span><span>مشاركة</span>
-      </button>
-    </div>
-
-    <!-- قسم الحفظ والمشاركة الشخصية -->
-    <div class="save-section" id="saveSection">
-      <p>💾 احفظ تهنئتك الشخصية وشاركها مع الآخرين</p>
-      <button class="btn btn-primary" onclick="saveAndShare()">
+      <!-- يظهر على الصفحة الفاضية فقط -->
+      <button class="btn btn-primary" id="createBtn" onclick="saveAndShare()" style="display:none">
         <span>✨</span><span>إنشاء رابط شخصي</span>
       </button>
-      <div class="share-link-box" id="shareLinkBox"></div>
+      <!-- يظهر لما يُفتح رابط شخص تاني -->
+      <button class="btn btn-secondary" id="shareBtn" onclick="shareGreeting()" style="display:none">
+        <span>🔗</span><span>مشاركة</span>
+      </button>
+      <button class="btn btn-secondary" id="createNewBtn" onclick="createNew()">
+        <span>✨</span><span>إنشاء تهنئتك</span>
+      </button>
     </div>
+    <div class="share-link-box" id="shareLinkBox" style="margin-top:12px"></div>
 
     <div class="footer-text">🌙 عيد مبارك وسعيد 🌙</div>
   </div>
@@ -264,8 +264,10 @@ GkXfo59ChoEBQveBAULygQRC84EIQoKEd2VibUKHgQRChYECGFOAZwEAAAAADchtEU2bdL9Nu5JTq4QV
           document.getElementById('previewImg').src = data.photo;
         }
 
-        // اخفي قسم الحفظ للمستقبِل
-        document.getElementById('saveSection').style.display = 'none';
+        // أزرار الصفحة المشتركة
+        document.getElementById('shareBtn').style.display = 'flex';
+        document.getElementById('createNewBtn').style.display = 'flex';
+        document.getElementById('createBtn').style.display = 'none';
 
         // اخفي عناصر التحرير
         document.getElementById('nameInput').style.display = 'none';
@@ -286,6 +288,12 @@ GkXfo59ChoEBQveBAULygQRC84EIQoKEd2VibUKHgQRChYECGFOAZwEAAAAADchtEU2bdL9Nu5JTq4QV
 
   // ===== تشغيل عند فتح الصفحة =====
   loadGreetingFromUrl();
+
+  // لو الصفحة فاضية (بدون ?id) اظهر زر إنشاء رابط شخصي فقط
+  const urlParams = new URLSearchParams(window.location.search);
+  if (!urlParams.get('id')) {
+    document.getElementById('createBtn').style.display = 'flex';
+  }
 </script>
 
 <script>
@@ -359,7 +367,16 @@ GkXfo59ChoEBQveBAULygQRC84EIQoKEd2VibUKHgQRChYECGFOAZwEAAAAADchtEU2bdL9Nu5JTq4QV
   }
 
   function shareGreeting() {
-    // افتح صفحة جديدة نظيفة (بدون ?id) عشان الشخص ينشئ تهنئته
+    const url = window.location.href;
+    if (navigator.share) {
+      navigator.share({title:'عيد الفطر المبارك', text:'كل عام وأنتم بخير 🌙', url});
+    } else {
+      navigator.clipboard.writeText(url)
+        .then(() => showToast('📋 تم نسخ الرابط!'))
+        .catch(() => prompt('انسخ الرابط:', url));
+    }
+  }
+  function createNew() {
     const baseUrl = window.location.origin + window.location.pathname;
     window.open(baseUrl, '_blank');
   }
