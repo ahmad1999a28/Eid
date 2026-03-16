@@ -147,6 +147,24 @@ GkXfo59ChoEBQveBAULygQRC84EIQoKEd2VibUKHgQRChYECGFOAZwEAAAAADchtEU2bdL9Nu5JTq4QV
   }
   let playing = false;
   const audio = document.getElementById('takbeerAudio');
+
+  // شغل الصوت أول ما المستخدم يتفاعل مع الصفحة
+  function startOnInteraction() {
+    if (!playing) {
+      audio.play().then(() => {
+        playing = true;
+        const btn = document.getElementById('audioBtn');
+        btn.classList.add('btn-playing'); btn.classList.remove('btn-primary');
+        document.getElementById('audioIcon').textContent = '⏹';
+        document.getElementById('audioLabel').textContent = 'إيقاف التكبيرات';
+      }).catch(() => {});
+    }
+    document.removeEventListener('click', startOnInteraction);
+    document.removeEventListener('touchstart', startOnInteraction);
+  }
+  document.addEventListener('click', startOnInteraction);
+  document.addEventListener('touchstart', startOnInteraction);
+
   function toggleAudio() {
     const btn = document.getElementById('audioBtn');
     const icon = document.getElementById('audioIcon');
