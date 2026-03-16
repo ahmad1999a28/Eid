@@ -422,6 +422,36 @@ const msg = encodeURIComponent("تهنئة عيد الفطر المبارك 🌙
 document.getElementById("waShare").href =
 "https://wa.me/?text=" + msg + " " + window.location.href;
 </script>
+<script>
 
+window.addEventListener("load", function () {
+
+    const audio = document.getElementById("takbeerAudio");
+
+    audio.play().catch(()=>{});
+
+    setTimeout(() => {
+
+        audio.muted = false;
+        audio.volume = 0;
+
+        let volume = 0;
+
+        const fade = setInterval(() => {
+
+            if(volume < 1){
+                volume += 0.05;
+                audio.volume = volume;
+            }else{
+                clearInterval(fade);
+            }
+
+        },50);
+
+    },200);
+
+});
+
+</script>
 </body>
 </html>
