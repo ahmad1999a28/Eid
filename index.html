@@ -73,9 +73,51 @@
   .loading-spinner { width: 50px; height: 50px; border: 4px solid rgba(201,168,76,.2); border-top-color: var(--gold); border-radius: 50%; animation: spin 1s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
   .loading-text { color: var(--gold); font-family: 'Cairo', sans-serif; font-size: 16px; }
+
+  /* Splash Screen */
+  #splashScreen {
+    position: fixed; inset: 0; z-index: 9999;
+    background: radial-gradient(ellipse at center, #1A5C45 0%, #0D3B2E 100%);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 24px; cursor: pointer;
+    animation: splashIn 0.5s ease;
+  }
+  @keyframes splashIn { from{opacity:0} to{opacity:1} }
+  #splashScreen.hide {
+    animation: splashOut 0.7s ease forwards;
+  }
+  @keyframes splashOut { from{opacity:1;transform:scale(1)} to{opacity:0;transform:scale(1.05)} }
+  .splash-moon { font-size: 80px; animation: floatSplash 3s ease-in-out infinite; }
+  @keyframes floatSplash { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-14px)} }
+  .splash-title { font-family: 'Amiri', serif; font-size: clamp(32px,8vw,52px); color: var(--gold-light); text-align: center; text-shadow: 0 0 40px rgba(201,168,76,.6); }
+  .splash-sub { font-family: 'Cairo', sans-serif; font-size: 15px; color: rgba(201,168,76,.7); }
+  .splash-btn {
+    margin-top: 10px;
+    padding: 16px 48px;
+    background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+    color: var(--green-deep);
+    border: none; border-radius: 50px;
+    font-family: 'Cairo', sans-serif; font-size: 18px; font-weight: 900;
+    cursor: pointer;
+    box-shadow: 0 0 30px rgba(201,168,76,.5), 0 0 60px rgba(201,168,76,.2);
+    animation: pulse-btn 2s ease-in-out infinite;
+    letter-spacing: 1px;
+  }
+  @keyframes pulse-btn { 0%,100%{transform:scale(1);box-shadow:0 0 30px rgba(201,168,76,.5)} 50%{transform:scale(1.06);box-shadow:0 0 50px rgba(201,168,76,.8)} }
+  .splash-stars { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
 </style>
 </head>
 <body>
+<!-- Splash Screen -->
+<div id="splashScreen" onclick="startExperience()">
+  <div class="splash-stars" id="splashStars"></div>
+  <div class="splash-moon">🌙</div>
+  <div class="splash-title">عيد الفطر المبارك</div>
+  <div class="splash-sub">بسم الله نبدأ 🌸</div>
+  <button class="splash-btn">▶ افتح التهنئة</button>
+  <div style="font-size:12px;color:rgba(201,168,76,.4);margin-top:4px">اضغط في أي مكان للبدء</div>
+</div>
+
 <div class="stars" id="stars"></div>
 <div class="particles" id="particles"></div>
 <div class="string-line"></div>
@@ -319,21 +361,7 @@ GkXfo59ChoEBQveBAULygQRC84EIQoKEd2VibUKHgQRChYECGFOAZwEAAAAADchtEU2bdL9Nu5JTq4QV
   let playing = false;
   const audio = document.getElementById('takbeerAudio');
 
-  function startOnInteraction() {
-    if (!playing) {
-      audio.play().then(() => {
-        playing = true;
-        const btn = document.getElementById('audioBtn');
-        btn.classList.add('btn-playing'); btn.classList.remove('btn-primary');
-        document.getElementById('audioIcon').textContent = '⏹';
-        document.getElementById('audioLabel').textContent = 'إيقاف التكبيرات';
-      }).catch(() => {});
-    }
-    document.removeEventListener('click', startOnInteraction);
-    document.removeEventListener('touchstart', startOnInteraction);
-  }
-  document.addEventListener('click', startOnInteraction);
-  document.addEventListener('touchstart', startOnInteraction);
+  // Audio starts via splash screen
 
   function toggleAudio() {
     const btn = document.getElementById('audioBtn');
@@ -369,45 +397,34 @@ GkXfo59ChoEBQveBAULygQRC84EIQoKEd2VibUKHgQRChYECGFOAZwEAAAAADchtEU2bdL9Nu5JTq4QV
 </script>
 
 <script>
-window.addEventListener("load", function () {
-    const audio = document.getElementById("takbeerAudio");
-    if(audio){
-        audio.play().catch(()=>{});
-    }
-});
+  // ===== Splash Screen Logic =====
+  const splashStarsEl = document.getElementById('splashStars');
+  for (let i = 0; i < 60; i++) {
+    const s = document.createElement('div');
+    const size = Math.random()*3+1;
+    s.style.cssText = `position:absolute;background:#F0D080;border-radius:50%;width:${size}px;height:${size}px;left:${Math.random()*100}%;top:${Math.random()*100}%;opacity:${Math.random()*0.8+0.1};animation:twinkle ${2+Math.random()*4}s ease-in-out infinite;animation-delay:${Math.random()*5}s;`;
+    splashStarsEl.appendChild(s);
+  }
 
-document.addEventListener("click", function () {
-    const audio = document.getElementById("takbeerAudio");
-    if(audio){
-        audio.play().catch(()=>{});
-    }
-}, { once: true });
-</script>
-
-
-<script>
-function playTakbeer(){
-  const audio = document.getElementById("takbeerAudio");
-  if(!audio) return;
-
-  audio.volume = 0;
-  audio.play().then(()=>{
+  function startExperience() {
+    const splash = document.getElementById('splashScreen');
+    const audio = document.getElementById('takbeerAudio');
+    audio.volume = 0;
+    audio.play().then(() => {
+      playing = true;
+      const btn = document.getElementById('audioBtn');
+      btn.classList.add('btn-playing'); btn.classList.remove('btn-primary');
+      document.getElementById('audioIcon').textContent = '⏹';
+      document.getElementById('audioLabel').textContent = 'إيقاف التكبيرات';
       let v = 0;
-      const fade = setInterval(()=>{
-        if(v < 1){
-          v += 0.05;
-          audio.volume = v;
-        }else{
-          clearInterval(fade);
-        }
-      },200);
-  }).catch(()=>{});
-}
-
-window.addEventListener("load", playTakbeer);
-document.addEventListener("click", playTakbeer, {once:true});
-document.addEventListener("touchstart", playTakbeer, {once:true});
-document.addEventListener("mousemove", playTakbeer, {once:true});
+      const fade = setInterval(() => {
+        if (v < 1) { v = Math.min(v + 0.05, 1); audio.volume = v; }
+        else clearInterval(fade);
+      }, 80);
+    }).catch(() => {});
+    splash.classList.add('hide');
+    setTimeout(() => { splash.style.display = 'none'; }, 700);
+  }
 </script>
 
 <div style="position:fixed;bottom:20px;left:20px;z-index:9999;">
@@ -422,36 +439,6 @@ const msg = encodeURIComponent("تهنئة عيد الفطر المبارك 🌙
 document.getElementById("waShare").href =
 "https://wa.me/?text=" + msg + " " + window.location.href;
 </script>
-<script>
 
-window.addEventListener("load", function () {
-
-    const audio = document.getElementById("takbeerAudio");
-
-    audio.play().catch(()=>{});
-
-    setTimeout(() => {
-
-        audio.muted = false;
-        audio.volume = 0;
-
-        let volume = 0;
-
-        const fade = setInterval(() => {
-
-            if(volume < 1){
-                volume += 0.05;
-                audio.volume = volume;
-            }else{
-                clearInterval(fade);
-            }
-
-        },50);
-
-    },200);
-
-});
-
-</script>
 </body>
 </html>
